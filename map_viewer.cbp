@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="map_viewer" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="map_viewer" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="map_viewer" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-std=c++14" />
+			<Add option="-fexceptions" />
+			<Add directory="/usr/include/eigen3" />
+			<Add directory="/usr/local/include" />
+		</Compiler>
+		<Linker>
+			<Add library="opencv_core" />
+			<Add library="opencv_highgui" />
+			<Add library="opencv_aruco" />
+			<Add library="opencv_bgsegm" />
+			<Add library="opencv_bioinspired" />
+			<Add library="opencv_calib3d" />
+			<Add library="opencv_ccalib" />
+			<Add library="opencv_datasets" />
+			<Add library="opencv_dnn" />
+			<Add library="opencv_dpm" />
+			<Add library="opencv_face" />
+			<Add library="opencv_features2d" />
+			<Add library="opencv_flann" />
+			<Add library="opencv_fuzzy" />
+			<Add library="opencv_imgcodecs" />
+			<Add library="opencv_img_hash" />
+			<Add library="opencv_imgproc" />
+			<Add library="opencv_line_descriptor" />
+			<Add library="opencv_ml" />
+			<Add library="opencv_objdetect" />
+			<Add library="opencv_optflow" />
+			<Add library="opencv_phase_unwrapping" />
+			<Add library="opencv_photo" />
+			<Add library="opencv_plot" />
+			<Add library="opencv_reg" />
+			<Add library="opencv_rgbd" />
+			<Add library="opencv_saliency" />
+			<Add library="opencv_shape" />
+			<Add library="opencv_stereo" />
+			<Add library="opencv_stitching" />
+			<Add library="opencv_structured_light" />
+			<Add library="opencv_superres" />
+			<Add library="opencv_surface_matching" />
+			<Add library="opencv_text" />
+			<Add library="opencv_tracking" />
+			<Add library="opencv_videoio" />
+			<Add library="opencv_video" />
+			<Add library="opencv_videostab" />
+			<Add library="opencv_xfeatures2d" />
+			<Add library="opencv_ximgproc" />
+			<Add library="opencv_xobjdetect" />
+			<Add library="opencv_xphoto" />
+			<Add directory="/usr/local/lib" />
+		</Linker>
+		<Unit filename="main.cpp" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
