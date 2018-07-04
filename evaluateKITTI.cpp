@@ -198,6 +198,8 @@ void plotPathPlot(string dir,vector<int> &roi,string mapa, string gt, string vo,
     // open file
     FILE *fp = fopen(full_name.c_str(),"w");
 
+    fprintf(fp,"set encoding utf8\n");
+
     // save gnuplot instructions
     if(i==0) {
       fprintf(fp,"set term png size 900,900\n");
@@ -342,6 +344,8 @@ void plotErrorPlotsComb(string dir, vector<string> &labels, unsigned int exclui,
             // open file
             FILE *fp = fopen(full_name,"w");
 
+            fprintf(fp,"set encoding utf8\n");
+
             // save gnuplot instructions
             if(j==0){
                 fprintf(fp,"set term png size 500,250 font \"Helvetica\" 11\n");
@@ -357,15 +361,15 @@ void plotErrorPlotsComb(string dir, vector<string> &labels, unsigned int exclui,
 
             // x label
             if(i<=1)
-                fprintf(fp,"set xlabel \"Distancia Percorrida [m]\"\n");
+                fprintf(fp,"set xlabel \"Distância Percorrida [m]\"\n");
             else
                 fprintf(fp,"set xlabel \"Velocidade [km/h]\"\n");
 
             // y label
             if(i==0 || i==2)
-                fprintf(fp,"set ylabel \"Erro de Translacao[%%]\"\n");
+                fprintf(fp,"set ylabel \"Erro de Translação[%%]\"\n");
             else
-                fprintf(fp,"set ylabel \"Erro de Rotacao [deg/m]\"\n");
+                fprintf(fp,"set ylabel \"Erro de Rotação [deg/m]\"\n");
 
             // plot error curve
             fprintf(fp,"plot \\\n");
@@ -455,6 +459,8 @@ void plotErrorPlots(string dir, string label, Scalar cor)
             // open file
             FILE *fp = fopen(full_name,"w");
 
+            fprintf(fp,"set encoding utf8\n");
+
             // save gnuplot instructions
             if(j==0){
                 fprintf(fp,"set term png size 500,250 font \"Helvetica\" 11\n");
@@ -470,15 +476,15 @@ void plotErrorPlots(string dir, string label, Scalar cor)
 
             // x label
             if(i<=1)
-                fprintf(fp,"set xlabel \"Distancia Percorrida [m]\"\n");
+                fprintf(fp,"set xlabel \"Distância Percorrida [m]\"\n");
             else
                 fprintf(fp,"set xlabel \"Velocidade [km/h]\"\n");
 
             // y label
             if(i==0 || i==2)
-                fprintf(fp,"set ylabel \"Erro de Translacao[%%]\"\n");
+                fprintf(fp,"set ylabel \"Erro de Translação[%%]\"\n");
             else
-                fprintf(fp,"set ylabel \"Erro de Rotacao [deg/m]\"\n");
+                fprintf(fp,"set ylabel \"Erro de Rotação [deg/m]\"\n");
 
             // plot error curve
             fprintf(fp,"plot \"%s_%s.txt\" using ",prefix.c_str(), suffix);

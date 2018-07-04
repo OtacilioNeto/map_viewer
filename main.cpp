@@ -28,6 +28,7 @@
 
 #include <stdlib.h>
 #include <getopt.h>
+#include <locale.h>
 
 #include "evaluateKITTI.h"
 
@@ -239,7 +240,7 @@ int main(int argc, char **argv)
                                 Scalar(0,   125, 125),
                                 Scalar(125,   0, 125),
                                 Scalar(125, 125,   0)};
-
+    setlocale(LC_COLLATE, "");  // Adiciona suporte a impressao de caracteres especiaisi
     for (;;) {
         int idx;
         int c;
