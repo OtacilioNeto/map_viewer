@@ -80,6 +80,8 @@
 			<Add library="opencv_xphoto" />
 			<Add directory="/usr/local/lib" />
 		</Linker>
+		<Unit filename="evaluateKITTI.cpp" />
+		<Unit filename="evaluateKITTI.h" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<code_completion />

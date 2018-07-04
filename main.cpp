@@ -29,6 +29,8 @@
 #include <stdlib.h>
 #include <getopt.h>
 
+#include "evaluateKITTI.h"
+
 #define WIDTH   1920
 #define HEIGHT  1080
 #define BORDAL  5
