@@ -400,7 +400,7 @@ void saveStats(vector<errors> err,string dir)
   fclose(fp);
 }
 
-bool eval(vector<string> labels, vector<vector<Matrix4f> > maps, unsigned int rindex, string diretorio)
+bool eval(vector<string> &labels, vector<vector<Matrix4f> > &maps, unsigned int rindex, string diretorio)
 {
     system(("mkdir " + diretorio).c_str());
 
@@ -423,20 +423,20 @@ bool eval(vector<string> labels, vector<vector<Matrix4f> > maps, unsigned int ri
             vector<errors> seq_err = calcSequenceErrors(maps[rindex], maps[i]);
             basec = strdup(labels[i].c_str());
             bname = basename(basec);
-            saveSequenceErrors(seq_err, diretorio + "/" + bname + "seq_err.txt");
+            saveSequenceErrors(seq_err, diretorio + "/" + bname + "_seq_err.txt");
 
             // add to total errors
             total_err.insert(total_err.end(), seq_err.begin(), seq_err.end());
 
             // save + plot bird's eye view trajectories
-            savePathPlot(maps[rindex], maps[i], diretorio + "/" + bname + "path_plot.txt");
+            savePathPlot(maps[rindex], maps[i], diretorio + "/" + bname + "_path_plot.txt");
 
             vector<int> roi = computeRoi(maps[rindex], maps[i]);
-            plotPathPlot(diretorio, roi, bname + string("path_plot.txt"));
+            plotPathPlot(diretorio, roi, bname + string("_path_plot.txt"));
 
             // save + plot individual errors
-            saveErrorPlots(seq_err,diretorio, bname + string("err_plot.txt"));
-            plotErrorPlots(diretorio, bname + string("err_plot.txt"));
+            saveErrorPlots(seq_err,diretorio, bname + string("_err_plot.txt"));
+            plotErrorPlots(diretorio, bname + string("_err_plot.txt"));
 
         }
     }
@@ -445,8 +445,8 @@ bool eval(vector<string> labels, vector<vector<Matrix4f> > maps, unsigned int ri
     if (total_err.size()>0) {
         char prefix[16];
         sprintf(prefix,"avg");
-        saveErrorPlots(total_err,diretorio,prefix);
-        plotErrorPlots(diretorio,prefix);
+        /*saveErrorPlots(total_err,diretorio,prefix);
+        plotErrorPlots(diretorio,prefix);*/
         saveStats(total_err,diretorio);
     }
     // success

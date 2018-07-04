@@ -72,7 +72,7 @@ vector<Matrix4f> load_file(string arquivo)
 {
     vector<Matrix4f> mapa;
     ifstream stream;
-    Matrix4f matriz = Matrix4f::Zero();
+    Matrix4f matriz;
     matriz << 1, 0, 0, 0,
               0, 1, 0, 0,
               0, 0, 1, 0,
@@ -80,13 +80,15 @@ vector<Matrix4f> load_file(string arquivo)
 
     stream.open(arquivo);
 
-    mapa.push_back(matriz);
-    while(!stream.eof()){
+    stream  >> matriz(0, 0) >> matriz(0, 1) >> matriz(0, 2) >> matriz(0, 3)
+            >> matriz(1, 0) >> matriz(1, 1) >> matriz(1, 2) >> matriz(1, 3)
+            >> matriz(2, 0) >> matriz(2, 1) >> matriz(2, 2) >> matriz(2, 3);
+    while(stream.good()){
+        mapa.push_back(matriz);
+
         stream >> matriz(0, 0) >> matriz(0, 1) >> matriz(0, 2) >> matriz(0, 3)
                >> matriz(1, 0) >> matriz(1, 1) >> matriz(1, 2) >> matriz(1, 3)
                >> matriz(2, 0) >> matriz(2, 1) >> matriz(2, 2) >> matriz(2, 3);
-
-        mapa.push_back(matriz);
     }
 
     stream.close();
@@ -329,6 +331,10 @@ int main(int argc, char **argv)
     desenhaBordasLabel(labels, imagem, cores, refX, refmenorx, refmaiorx, refmenory, refmaiory);
 
 	imwrite("imagem.png", imagem);
+
+	// Agora vamos fazer as analises de acordo com o dataset do KITTI
+
+	eval(labels, maps, rindex, diretorio);
 
     return EXIT_SUCCESS;
 }

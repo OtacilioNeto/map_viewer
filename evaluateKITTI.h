@@ -30,15 +30,15 @@ using namespace std;
 using namespace Eigen;
 
 struct errors {
-  int32_t first_frame;
+  unsigned int first_frame;
   float   r_err;
   float   t_err;
   float   len;
   float   speed;
-  errors (int32_t first_frame,float r_err,float t_err,float len,float speed) :
+  errors (unsigned int first_frame, float r_err, float t_err, float len, float speed) :
     first_frame(first_frame),r_err(r_err),t_err(t_err),len(len),speed(speed) {}
 };
 
-bool eval(vector<string> labels, vector<vector<Matrix4f> > maps, unsigned int rindex, string diretorio);
+bool eval(vector<string> &labels, vector<vector<Matrix4f> > &maps, unsigned int rindex, string diretorio);
 
 #endif
