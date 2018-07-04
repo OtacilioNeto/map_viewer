@@ -218,7 +218,7 @@ void plotPathPlot(string dir,vector<int> &roi,string mapa, string gt, string vo,
         (unsigned int)cor1[0], (unsigned int)cor1[1], (unsigned int)cor1[2], gt.c_str());
     fprintf(fp,"\"%s\" using 3:4 lc rgb \"#%02X%02X%02X\" title '%s' w lines,",mapa.c_str(),
         (unsigned int)cor2[0], (unsigned int)cor2[1], (unsigned int)cor2[2], vo.c_str());
-    fprintf(fp,"\"< head -1 %s\" using 1:2 lc rgb \"#000000\" pt 4 ps 1 lw 2 title 'Inicio' w points\n",mapa.c_str());
+    fprintf(fp,"\"< head -1 %s\" using 1:2 lc rgb \"#000000\" pt 4 ps 1 lw 2 title 'Início' w points\n",mapa.c_str());
 
     // close file
     fclose(fp);
