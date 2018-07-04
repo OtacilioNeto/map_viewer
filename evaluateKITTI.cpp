@@ -22,8 +22,9 @@
 
 #include <libgen.h>
 
-float lengths[] = {100,200,300,400,500,600,700,800};
-unsigned int num_lengths = 8;
+float lengths[] = {100,200,300,400,500,600,700,800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000,
+                   2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800, 2900, 3000, 3100, 3200, 3300, 3400, 3500, 3600, 3700};
+unsigned int num_lengths = 37;
 
 vector<float> trajectoryDistances(vector<Matrix4f> &poses)
 {
@@ -182,7 +183,7 @@ vector<int> computeRoi(vector<Matrix4f> &poses_gt,vector<Matrix4f> &poses_result
     return roi;
 }
 
-void plotPathPlot(string dir,vector<int> &roi,string mapa, string gt, string vo)
+void plotPathPlot(string dir,vector<int> &roi,string mapa, string gt, string vo, Scalar cor1, Scalar cor2)
 {
 
   // gnuplot file name
@@ -211,8 +212,10 @@ void plotPathPlot(string dir,vector<int> &roi,string mapa, string gt, string vo)
     fprintf(fp,"set yrange [%d:%d]\n",roi[2],roi[3]);
     fprintf(fp,"set xlabel \"x [m]\"\n");
     fprintf(fp,"set ylabel \"z [m]\"\n");
-    fprintf(fp,"plot \"%s\" using 1:2 lc rgb \"#FF0000\" title '%s' w lines,",mapa.c_str(), gt.c_str());
-    fprintf(fp,"\"%s\" using 3:4 lc rgb \"#0000FF\" title '%s' w lines,",mapa.c_str(), vo.c_str());
+    fprintf(fp,"plot \"%s\" using 1:2 lc rgb \"#%02X%02X%02X\" title '%s' w lines,",mapa.c_str(),
+        (unsigned int)cor1[0], (unsigned int)cor1[1], (unsigned int)cor1[2], gt.c_str());
+    fprintf(fp,"\"%s\" using 3:4 lc rgb \"#%02X%02X%02X\" title '%s' w lines,",mapa.c_str(),
+        (unsigned int)cor2[0], (unsigned int)cor2[1], (unsigned int)cor2[2], vo.c_str());
     fprintf(fp,"\"< head -1 %s\" using 1:2 lc rgb \"#000000\" pt 4 ps 1 lw 2 title 'Inicio' w points\n",mapa.c_str());
 
     // close file
@@ -413,7 +416,7 @@ void plotErrorPlotsComb(string dir, vector<string> &labels, unsigned int exclui,
     }
 }
 
-void plotErrorPlots(string dir, string label)
+void plotErrorPlots(string dir, string label, Scalar cor)
 {
     char command[4096];
 
@@ -493,7 +496,9 @@ void plotErrorPlots(string dir, string label)
                 fprintf(fp,"($1*3.6):($2*57.3) title '%s'", label.c_str());
                 break;
             }
-            fprintf(fp," lc rgb \"#0000FF\" pt 4 w linespoints\n");
+            fprintf(fp," lc rgb \"#%02X%02X%02X\" pt 4 w linespoints\n",    (unsigned int)cor[0],
+                                                                            (unsigned int)cor[1],
+                                                                            (unsigned int)cor[2]);
 
             // close file
             fclose(fp);
@@ -565,11 +570,12 @@ bool eval(vector<string> &labels, vector<vector<Matrix4f> > &maps, unsigned int 
             savePathPlot(maps[rindex], maps[i], diretorio + "/" + labels[i] + "-path_plot.txt");
 
             vector<int> roi = computeRoi(maps[rindex], maps[i]);
-            plotPathPlot(diretorio, roi, labels[i] + string("-path_plot.txt"), labels[rindex], labels[i]);
+            plotPathPlot(diretorio, roi, labels[i] + string("-path_plot.txt"), labels[rindex], labels[i], cores[rindex],
+                                                                                                cores[i]);
 
             // save + plot individual errors
             saveErrorPlots(seq_err, diretorio, labels[i] + string("-err_plot.txt"));
-            plotErrorPlots(diretorio, labels[i]);
+            plotErrorPlots(diretorio, labels[i], cores[i]);
         }
     }
 
