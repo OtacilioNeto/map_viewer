@@ -334,7 +334,7 @@ int main(int argc, char **argv)
 
 	// Agora vamos fazer as analises de acordo com o dataset do KITTI
 
-	eval(labels, maps, rindex, diretorio);
+	eval(labels, maps, rindex, diretorio, cores);
 
     return EXIT_SUCCESS;
 }

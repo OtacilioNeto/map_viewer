@@ -25,9 +25,11 @@
 #include <iostream>
 #include <vector>
 #include <Eigen/Dense>
+#include <opencv2/core/core.hpp>
 
 using namespace std;
 using namespace Eigen;
+using namespace cv;
 
 struct errors {
   unsigned int first_frame;
@@ -39,6 +41,6 @@ struct errors {
     first_frame(first_frame),r_err(r_err),t_err(t_err),len(len),speed(speed) {}
 };
 
-bool eval(vector<string> &labels, vector<vector<Matrix4f> > &maps, unsigned int rindex, string diretorio);
+bool eval(vector<string> &labels, vector<vector<Matrix4f> > &maps, unsigned int rindex, string diretorio, vector<Scalar> &cores);
 
 #endif

@@ -300,81 +300,217 @@ void saveErrorPlots(vector<errors> &seq_err,string plot_error_dir,string prefix)
   fclose(fp_rs);
 }
 
-void plotErrorPlots(string dir,string prefix)
+void plotErrorPlotsComb(string dir, vector<string> &labels, unsigned int exclui, vector<Scalar> &cores)
 {
+    char command[4096];
 
-  char command[1024];
+    string prefix = string("err_plot_comb.txt");
 
-  // for all four error plots do
-  for (int32_t i=0; i<4; i++) {
+    // for all four error plots do
+    for(unsigned int i=0; i<4; i++){
 
-    // create suffix
-    char suffix[16];
-    switch (i) {
-      case 0: sprintf(suffix,"tl"); break;
-      case 1: sprintf(suffix,"rl"); break;
-      case 2: sprintf(suffix,"ts"); break;
-      case 3: sprintf(suffix,"rs"); break;
+        // create suffix
+        char suffix[16];
+
+        switch(i){
+        case 0:
+            sprintf(suffix,"tl");
+            break;  // translacao por distancia
+        case 1:
+            sprintf(suffix,"rl");
+            break;  // rotacao por distancia
+        case 2:
+            sprintf(suffix,"ts");
+            break;  // translacao por velocidade
+        case 3:
+            sprintf(suffix,"rs");
+            break;  // rotacao por velocidade
+        }
+
+        // gnuplot file name
+        char file_name[4096];
+        char full_name[4096];
+        sprintf(file_name,"%s_%s.gp",   prefix.c_str(), suffix);
+        sprintf(full_name,"%s/%s",      dir.c_str(),    file_name);
+
+        // create png + eps
+        for(unsigned int j=0; j<2; j++) {
+
+            // open file
+            FILE *fp = fopen(full_name,"w");
+
+            // save gnuplot instructions
+            if(j==0){
+                fprintf(fp,"set term png size 500,250 font \"Helvetica\" 11\n");
+                fprintf(fp,"set output \"%s_%s.png\"\n",prefix.c_str(),suffix);
+            }else{
+                fprintf(fp,"set term postscript eps enhanced color\n");
+                fprintf(fp,"set output \"%s_%s.eps\"\n",prefix.c_str(),suffix);
+            }
+
+            // start plot at 0
+            fprintf(fp,"set size ratio 0.5\n");
+            fprintf(fp,"set yrange [0:*]\n");
+
+            // x label
+            if(i<=1)
+                fprintf(fp,"set xlabel \"Distancia Percorrida [m]\"\n");
+            else
+                fprintf(fp,"set xlabel \"Velocidade [km/h]\"\n");
+
+            // y label
+            if(i==0 || i==2)
+                fprintf(fp,"set ylabel \"Erro de Translacao[%%]\"\n");
+            else
+                fprintf(fp,"set ylabel \"Erro de Rotacao [deg/m]\"\n");
+
+            // plot error curve
+            fprintf(fp,"plot \\\n");
+            for(unsigned int k=0; k<labels.size(); k++){
+                if(k!=exclui){
+                    fprintf(fp, "\"%s_%s.txt\" using ", (labels[k] + "-err_plot.txt").c_str(), suffix);
+                    switch(i){
+                    case 0:
+                        fprintf(fp,"1:($2*100) title '%s'",         labels[k].c_str());
+                        break;
+                    case 1:
+                        fprintf(fp,"1:($2*57.3) title '%s'",        labels[k].c_str());
+                        break;
+                    case 2:
+                        fprintf(fp,"($1*3.6):($2*100) title '%s'",  labels[k].c_str());
+                        break;
+                    case 3:
+                        fprintf(fp,"($1*3.6):($2*57.3) title '%s'", labels[k].c_str());
+                        break;
+                    }
+                    if(k==labels.size()-1 || (k+1==exclui && exclui==labels.size()-1)){
+                        fprintf(fp," lc rgb \"#%02X%02X%02X\" pt 4 w linespoints\n",  (unsigned int)cores[k][0],
+                                                                                (unsigned int)cores[k][1],
+                                                                                (unsigned int)cores[k][2]);
+                    }else{
+                        fprintf(fp," lc rgb \"#%02X%02X%02X\" pt 4 w linespoints, \\\n", (unsigned int)cores[k][0],
+                                                                                (unsigned int)cores[k][1],
+                                                                                (unsigned int)cores[k][2]);
+                    }
+                }
+            }
+
+            // close file
+            fclose(fp);
+
+            // run gnuplot => create png + eps
+            sprintf(command,"cd %s; gnuplot %s",dir.c_str(),file_name);
+            system(command);
+        }
+
+        // create pdf and crop
+        sprintf(command,"cd %s; ps2pdf %s_%s.eps %s_%s_large.pdf",dir.c_str(),prefix.c_str(),suffix,prefix.c_str(),suffix);
+        system(command);
+        sprintf(command,"cd %s; pdfcrop %s_%s_large.pdf %s_%s.pdf",dir.c_str(),prefix.c_str(),suffix,prefix.c_str(),suffix);
+        system(command);
+        sprintf(command,"cd %s; rm %s_%s_large.pdf",dir.c_str(),prefix.c_str(),suffix);
+        system(command);
     }
+}
 
-    // gnuplot file name
-    char file_name[1024]; char full_name[1024];
-    sprintf(file_name,"%s_%s.gp",prefix.c_str(),suffix);
-    sprintf(full_name,"%s/%s",dir.c_str(),file_name);
+void plotErrorPlots(string dir, string label)
+{
+    char command[4096];
 
-    // create png + eps
-    for(int32_t j=0; j<2; j++) {
+    string prefix = label+string("-err_plot.txt");
 
-      // open file
-      FILE *fp = fopen(full_name,"w");
+    // for all four error plots do
+    for(unsigned int i=0; i<4; i++){
 
-      // save gnuplot instructions
-      if (j==0) {
-        fprintf(fp,"set term png size 500,250 font \"Helvetica\" 11\n");
-        fprintf(fp,"set output \"%s_%s.png\"\n",prefix.c_str(),suffix);
-      } else {
-        fprintf(fp,"set term postscript eps enhanced color\n");
-        fprintf(fp,"set output \"%s_%s.eps\"\n",prefix.c_str(),suffix);
-      }
+        // create suffix
+        char suffix[16];
 
-      // start plot at 0
-      fprintf(fp,"set size ratio 0.5\n");
-      fprintf(fp,"set yrange [0:*]\n");
+        switch(i){
+        case 0:
+            sprintf(suffix,"tl");
+            break;  // translacao por distancia
+        case 1:
+            sprintf(suffix,"rl");
+            break;  // rotacao por distancia
+        case 2:
+            sprintf(suffix,"ts");
+            break;  // translacao por velocidade
+        case 3:
+            sprintf(suffix,"rs");
+            break;  // rotacao por velocidade
+        }
 
-      // x label
-      if (i<=1) fprintf(fp,"set xlabel \"Distancia Percorrida [m]\"\n");
-      else      fprintf(fp,"set xlabel \"Velocidade [km/h]\"\n");
+        // gnuplot file name
+        char file_name[4096];
+        char full_name[4096];
+        sprintf(file_name,"%s_%s.gp",   prefix.c_str(), suffix);
+        sprintf(full_name,"%s/%s",      dir.c_str(),    file_name);
 
-      // y label
-      if (i==0 || i==2) fprintf(fp,"set ylabel \"Erro de Translacao[%%]\"\n");
-      else              fprintf(fp,"set ylabel \"Erro de Rotacao [deg/m]\"\n");
+        // create png + eps
+        for(unsigned int j=0; j<2; j++) {
 
-      // plot error curve
-      fprintf(fp,"plot \"%s_%s.txt\" using ",prefix.c_str(),suffix);
-      switch (i) {
-        case 0: fprintf(fp,"1:($2*100) title 'Erro de Translacao'"); break;
-        case 1: fprintf(fp,"1:($2*57.3) title 'Erro de Rotacao'"); break;
-        case 2: fprintf(fp,"($1*3.6):($2*100) title 'Erro de Translacao'"); break;
-        case 3: fprintf(fp,"($1*3.6):($2*57.3) title 'Erro de Rotacao'"); break;
-      }
-      fprintf(fp," lc rgb \"#0000FF\" pt 4 w linespoints\n");
+            // open file
+            FILE *fp = fopen(full_name,"w");
 
-      // close file
-      fclose(fp);
+            // save gnuplot instructions
+            if(j==0){
+                fprintf(fp,"set term png size 500,250 font \"Helvetica\" 11\n");
+                fprintf(fp,"set output \"%s_%s.png\"\n",prefix.c_str(),suffix);
+            }else{
+                fprintf(fp,"set term postscript eps enhanced color\n");
+                fprintf(fp,"set output \"%s_%s.eps\"\n",prefix.c_str(),suffix);
+            }
 
-      // run gnuplot => create png + eps
-      sprintf(command,"cd %s; gnuplot %s",dir.c_str(),file_name);
-      system(command);
+            // start plot at 0
+            fprintf(fp,"set size ratio 0.5\n");
+            fprintf(fp,"set yrange [0:*]\n");
+
+            // x label
+            if(i<=1)
+                fprintf(fp,"set xlabel \"Distancia Percorrida [m]\"\n");
+            else
+                fprintf(fp,"set xlabel \"Velocidade [km/h]\"\n");
+
+            // y label
+            if(i==0 || i==2)
+                fprintf(fp,"set ylabel \"Erro de Translacao[%%]\"\n");
+            else
+                fprintf(fp,"set ylabel \"Erro de Rotacao [deg/m]\"\n");
+
+            // plot error curve
+            fprintf(fp,"plot \"%s_%s.txt\" using ",prefix.c_str(), suffix);
+            switch(i){
+            case 0:
+                fprintf(fp,"1:($2*100) title '%s'",         label.c_str());
+                break;
+            case 1:
+                fprintf(fp,"1:($2*57.3) title '%s'",        label.c_str());
+                break;
+            case 2:
+                fprintf(fp,"($1*3.6):($2*100) title '%s'",  label.c_str());
+                break;
+            case 3:
+                fprintf(fp,"($1*3.6):($2*57.3) title '%s'", label.c_str());
+                break;
+            }
+            fprintf(fp," lc rgb \"#0000FF\" pt 4 w linespoints\n");
+
+            // close file
+            fclose(fp);
+
+            // run gnuplot => create png + eps
+            sprintf(command,"cd %s; gnuplot %s",dir.c_str(),file_name);
+            system(command);
+        }
+
+        // create pdf and crop
+        sprintf(command,"cd %s; ps2pdf %s_%s.eps %s_%s_large.pdf",dir.c_str(),prefix.c_str(),suffix,prefix.c_str(),suffix);
+        system(command);
+        sprintf(command,"cd %s; pdfcrop %s_%s_large.pdf %s_%s.pdf",dir.c_str(),prefix.c_str(),suffix,prefix.c_str(),suffix);
+        system(command);
+        sprintf(command,"cd %s; rm %s_%s_large.pdf",dir.c_str(),prefix.c_str(),suffix);
+        system(command);
     }
-
-    // create pdf and crop
-    sprintf(command,"cd %s; ps2pdf %s_%s.eps %s_%s_large.pdf",dir.c_str(),prefix.c_str(),suffix,prefix.c_str(),suffix);
-    system(command);
-    sprintf(command,"cd %s; pdfcrop %s_%s_large.pdf %s_%s.pdf",dir.c_str(),prefix.c_str(),suffix,prefix.c_str(),suffix);
-    system(command);
-    sprintf(command,"cd %s; rm %s_%s_large.pdf",dir.c_str(),prefix.c_str(),suffix);
-    system(command);
-  }
 }
 
 void saveStats(vector<errors> err,string dir)
@@ -400,7 +536,7 @@ void saveStats(vector<errors> err,string dir)
   fclose(fp);
 }
 
-bool eval(vector<string> &labels, vector<vector<Matrix4f> > &maps, unsigned int rindex, string diretorio)
+bool eval(vector<string> &labels, vector<vector<Matrix4f> > &maps, unsigned int rindex, string diretorio, vector<Scalar> &cores)
 {
     system(("mkdir " + diretorio).c_str());
 
@@ -432,10 +568,12 @@ bool eval(vector<string> &labels, vector<vector<Matrix4f> > &maps, unsigned int 
             plotPathPlot(diretorio, roi, labels[i] + string("-path_plot.txt"), labels[rindex], labels[i]);
 
             // save + plot individual errors
-            saveErrorPlots(seq_err,diretorio, labels[i] + string("-err_plot.txt"));
-            plotErrorPlots(diretorio, labels[i] + string("-err_plot.txt"));
+            saveErrorPlots(seq_err, diretorio, labels[i] + string("-err_plot.txt"));
+            plotErrorPlots(diretorio, labels[i]);
         }
     }
+
+    plotErrorPlotsComb(diretorio, labels, rindex, cores);
 
     // save + plot total errors + summary statistics
     if (total_err.size()>0) {
