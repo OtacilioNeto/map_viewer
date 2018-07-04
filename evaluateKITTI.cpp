@@ -28,15 +28,15 @@ unsigned int num_lengths = 37;
 
 vector<float> trajectoryDistances(vector<Matrix4f> &poses)
 {
-  vector<float> dist;
-  dist.push_back(0);
-  for (unsigned i=1; i<poses.size(); i++) {
-    Matrix4f P1 = poses[i-1];
-    Matrix4f P2 = poses[i];
-    float dx = P1(0, 3)-P2(0, 3);
-    float dy = P1(1, 3)-P2(1, 3);
-    float dz = P1(2, 3)-P2(2, 3);
-    dist.push_back(dist[i-1]+sqrt(dx*dx+dy*dy+dz*dz));
+    vector<float> dist;
+    dist.push_back(0);
+    for (unsigned i=1; i<poses.size(); i++) {
+        Matrix4f P1 = poses[i-1];
+        Matrix4f P2 = poses[i];
+        float dx = P1(0, 3)-P2(0, 3);
+        float dy = P1(1, 3)-P2(1, 3);
+        float dz = P1(2, 3)-P2(2, 3);
+        dist.push_back(dist[i-1]+sqrt(dx*dx+dy*dy+dz*dz));
   }
   return dist;
 }
@@ -95,9 +95,9 @@ vector<errors> calcSequenceErrors(vector<Matrix4f> &poses_gt, vector<Matrix4f> &
         continue;
 
       // compute rotational and translational errors
-      Matrix4f pose_delta_gt     = poses_gt[first_frame].inverse()*poses_gt[last_frame]; //Matrix::inv(poses_gt[first_frame])*poses_gt[last_frame];
-      Matrix4f pose_delta_result = poses_result[first_frame].inverse()*poses_result[last_frame];//Matrix::inv(poses_result[first_frame])*poses_result[last_frame];
-      Matrix4f pose_error        = pose_delta_result.inverse()*pose_delta_gt;//Matrix::inv(pose_delta_result)*pose_delta_gt;
+      Matrix4f pose_delta_gt     = poses_gt[first_frame].inverse()*poses_gt[last_frame];
+      Matrix4f pose_delta_result = poses_result[first_frame].inverse()*poses_result[last_frame];
+      Matrix4f pose_error        = pose_delta_result.inverse()*pose_delta_gt;
       float r_err = rotationError(pose_error);
       float t_err = translationError(pose_error);
 
