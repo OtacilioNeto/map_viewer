@@ -182,7 +182,7 @@ vector<int> computeRoi(vector<Matrix4f> &poses_gt,vector<Matrix4f> &poses_result
     return roi;
 }
 
-void plotPathPlot(string dir,vector<int> &roi,string mapa)
+void plotPathPlot(string dir,vector<int> &roi,string mapa, string gt, string vo)
 {
 
   // gnuplot file name
@@ -198,7 +198,7 @@ void plotPathPlot(string dir,vector<int> &roi,string mapa)
     FILE *fp = fopen(full_name.c_str(),"w");
 
     // save gnuplot instructions
-    if (i==0) {
+    if(i==0) {
       fprintf(fp,"set term png size 900,900\n");
       fprintf(fp,"set output \"%s.png\"\n",mapa.c_str());
     } else {
@@ -211,9 +211,9 @@ void plotPathPlot(string dir,vector<int> &roi,string mapa)
     fprintf(fp,"set yrange [%d:%d]\n",roi[2],roi[3]);
     fprintf(fp,"set xlabel \"x [m]\"\n");
     fprintf(fp,"set ylabel \"z [m]\"\n");
-    fprintf(fp,"plot \"%s\" using 1:2 lc rgb \"#FF0000\" title 'Ground Truth' w lines,",mapa.c_str());
-    fprintf(fp,"\"%s\" using 3:4 lc rgb \"#0000FF\" title 'Visual Odometry' w lines,",mapa.c_str());
-    fprintf(fp,"\"< head -1 %s\" using 1:2 lc rgb \"#000000\" pt 4 ps 1 lw 2 title 'Sequence Start' w points\n",mapa.c_str());
+    fprintf(fp,"plot \"%s\" using 1:2 lc rgb \"#FF0000\" title '%s' w lines,",mapa.c_str(), gt.c_str());
+    fprintf(fp,"\"%s\" using 3:4 lc rgb \"#0000FF\" title '%s' w lines,",mapa.c_str(), vo.c_str());
+    fprintf(fp,"\"< head -1 %s\" using 1:2 lc rgb \"#000000\" pt 4 ps 1 lw 2 title 'Inicio' w points\n",mapa.c_str());
 
     // close file
     fclose(fp);
@@ -342,20 +342,20 @@ void plotErrorPlots(string dir,string prefix)
       fprintf(fp,"set yrange [0:*]\n");
 
       // x label
-      if (i<=1) fprintf(fp,"set xlabel \"Path Length [m]\"\n");
-      else      fprintf(fp,"set xlabel \"Speed [km/h]\"\n");
+      if (i<=1) fprintf(fp,"set xlabel \"Distancia Percorrida [m]\"\n");
+      else      fprintf(fp,"set xlabel \"Velocidade [km/h]\"\n");
 
       // y label
-      if (i==0 || i==2) fprintf(fp,"set ylabel \"Translation Error [%%]\"\n");
-      else              fprintf(fp,"set ylabel \"Rotation Error [deg/m]\"\n");
+      if (i==0 || i==2) fprintf(fp,"set ylabel \"Erro de Translacao[%%]\"\n");
+      else              fprintf(fp,"set ylabel \"Erro de Rotacao [deg/m]\"\n");
 
       // plot error curve
       fprintf(fp,"plot \"%s_%s.txt\" using ",prefix.c_str(),suffix);
       switch (i) {
-        case 0: fprintf(fp,"1:($2*100) title 'Translation Error'"); break;
-        case 1: fprintf(fp,"1:($2*57.3) title 'Rotation Error'"); break;
-        case 2: fprintf(fp,"($1*3.6):($2*100) title 'Translation Error'"); break;
-        case 3: fprintf(fp,"($1*3.6):($2*57.3) title 'Rotation Error'"); break;
+        case 0: fprintf(fp,"1:($2*100) title 'Erro de Translacao'"); break;
+        case 1: fprintf(fp,"1:($2*57.3) title 'Erro de Rotacao'"); break;
+        case 2: fprintf(fp,"($1*3.6):($2*100) title 'Erro de Translacao'"); break;
+        case 3: fprintf(fp,"($1*3.6):($2*57.3) title 'Erro de Rotacao'"); break;
       }
       fprintf(fp," lc rgb \"#0000FF\" pt 4 w linespoints\n");
 
@@ -409,7 +409,6 @@ bool eval(vector<string> &labels, vector<vector<Matrix4f> > &maps, unsigned int 
 
     for(unsigned int i=0; i<maps.size(); i++){
         if(i != rindex){
-            char *basec, *bname;
             // plot status
             std::cerr << "Processing: "<<labels[i]<<", poses: "<<maps[i].size()<<"/"<<maps[rindex].size()<<std::endl;
 
@@ -421,23 +420,20 @@ bool eval(vector<string> &labels, vector<vector<Matrix4f> > &maps, unsigned int 
 
             // compute sequence errors
             vector<errors> seq_err = calcSequenceErrors(maps[rindex], maps[i]);
-            basec = strdup(labels[i].c_str());
-            bname = basename(basec);
-            saveSequenceErrors(seq_err, diretorio + "/" + bname + "_seq_err.txt");
+            saveSequenceErrors(seq_err, diretorio + "/" + labels[i] + "-seq_err.txt");
 
             // add to total errors
             total_err.insert(total_err.end(), seq_err.begin(), seq_err.end());
 
             // save + plot bird's eye view trajectories
-            savePathPlot(maps[rindex], maps[i], diretorio + "/" + bname + "_path_plot.txt");
+            savePathPlot(maps[rindex], maps[i], diretorio + "/" + labels[i] + "-path_plot.txt");
 
             vector<int> roi = computeRoi(maps[rindex], maps[i]);
-            plotPathPlot(diretorio, roi, bname + string("_path_plot.txt"));
+            plotPathPlot(diretorio, roi, labels[i] + string("-path_plot.txt"), labels[rindex], labels[i]);
 
             // save + plot individual errors
-            saveErrorPlots(seq_err,diretorio, bname + string("_err_plot.txt"));
-            plotErrorPlots(diretorio, bname + string("_err_plot.txt"));
-
+            saveErrorPlots(seq_err,diretorio, labels[i] + string("-err_plot.txt"));
+            plotErrorPlots(diretorio, labels[i] + string("-err_plot.txt"));
         }
     }
 
