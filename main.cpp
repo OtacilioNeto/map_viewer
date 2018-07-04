@@ -172,7 +172,7 @@ int main(int argc, char **argv)
 
         A << menorz, 1,
              maiorz, 1;
-        B << imagem.rows-PIXEL_BORDA, PIXEL_BORDA;  // Esta usando valores diferentes dos máxios para ficar uma borda
+        B << imagem.rows-PIXEL_BORDA, PIXEL_BORDA;  // Esta usando valores diferentes dos máximos para ficar uma borda
 
         X = A.colPivHouseholderQr().solve(B);
 
