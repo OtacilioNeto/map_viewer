@@ -173,6 +173,40 @@ void desenhaBordasLabel(vector<string> &labels, Mat &imagem, vector<Scalar> &cor
     }
 }
 
+void translateScala(vector<vector<Matrix4f> > &maps, unsigned int rindex)
+{
+    Vector2f X;
+    float refmenorx;
+    float refmaiorx;
+    float refmenorz;
+    float refmaiorz;
+
+    smallxz(maps[rindex], refmenorx, refmaiorx, refmenorz, refmaiorz);
+	for(unsigned int i=0; i<maps.size(); i++){
+        float menorx, maiorx, menorz, maiorz;
+
+        if(i != rindex){
+            smallxz(maps[i], menorx, maiorx, menorz, maiorz);
+
+            // Vamos encontrar a transformação linear que faz a mudança de escala da imagem para a referência
+            Matrix2f A;
+            Vector2f B;
+
+            A << menorz, 1,
+                 maiorz, 1;
+            B << refmenorz, refmaiorz;  // Esta usando valores diferentes dos máximos para ficar uma borda
+
+            X = A.colPivHouseholderQr().solve(B);
+
+            for(unsigned int j=1; j<maps[i].size(); j++){
+                maps[i][j](0, 3) = maps[i][j](0, 3)*X(0) + X(1);
+                maps[i][j](1, 3) = maps[i][j](1, 3)*X(0) + X(1);
+                maps[i][j](2, 3) = maps[i][j](2, 3)*X(0) + X(1);
+            }
+        }
+	}
+}
+
 int main(int argc, char **argv)
 {
     vector<string> labels;
@@ -237,8 +271,11 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
 	}
 
-	for(unsigned int i=0; i<maps.size(); i++){
+	// Precisamos encontrar os menores valores do mapa de referência
+	// para poder fazer a transformação de escala
+	translateScala(maps, rindex);
 
+	for(unsigned int i=0; i<maps.size(); i++){
         // Quando chegar aqui já carregou todos os mapas. Agora é preciso encontrar o menor e maior valor para x e z
         float menorx, maiorx, menorz, maiorz;
 
