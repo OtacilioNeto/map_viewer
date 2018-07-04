@@ -39,13 +39,14 @@ using namespace std;
 using namespace Eigen;
 using namespace cv;
 
-static const char short_options[] = "m:l:r:";
+static const char short_options[] = "m:l:r:d:";
 
 static const struct option
         long_options[] = {
 		{ "map",        required_argument, NULL, 'm' },
 		{ "label",      required_argument, NULL, 'l' },
 		{ "reference",  required_argument, NULL, 'r' },
+		{ "directory",  required_argument, NULL, 'd' },
         { 0, 	                        0, 	  0,  0  }  // Para casos em que o argumento não eh obrigatório use no_argument
 };
 
@@ -53,14 +54,16 @@ static void usage(int argc, char **argv)
 {
     cerr << "Usage " << argv[0] << " [options]"<<endl<<endl;
     cerr << "Options:"<< endl;
-    cerr << "-m | --map    File with map to load"<<endl;
-    cerr << "-l | --label  Label to map"<<endl;
+    cerr << "-m | --map       File with map to load"<<endl;
+    cerr << "-l | --label     Label to map"<<endl;
     cerr << "-r | --reference Index of reference"<<endl;
-    cerr << "exemplo: " << endl;
+    cerr << "-d | --directory Directory to store results"<<endl;
+    cerr << "example: " << endl;
     cerr << argv[0] << " -m /home/ota/cluster/KITTI/data_odometry_poses/dataset/poses/00.txt -l Referencia "
                        "-m /home/ota/workspace/OTA_SLAM/ORB_SLAM2_Estatistica/2000KEYPOINTSDELL.1000Mbps_iteracao_3/i1a1_1_1KeyFrameTrajectory.txt -l Teste "
                        "-m /home/ota/workspace/OTA_SLAM/ORB_SLAM2_Estatistica/2000KEYPOINTSDELL.1000Mbps_iteracao_11/KeyFrameTrajectory_referencia.txt -l ORB-SLAM "
-                       "-r 0"<<endl;
+                       "-r 0 "
+                       "-d /home/ota/workspace/OTA_SLAM/ORB_SLAM2_Estatistica/2000KEYPOINTSDELL.1000Mbps_iteracao_3/i1a1_1_1.dir"<<endl;
 }
 
 vector<Matrix4f> load_file(string arquivo)
@@ -89,129 +92,32 @@ vector<Matrix4f> load_file(string arquivo)
     return mapa;
 }
 
-int main(int argc, char **argv)
+void smallxz(vector<Matrix4f> &mapa, float &menorx, float &maiorx, float &menorz, float &maiorz)
 {
-    vector<string> labels;
-    vector<vector<Matrix4f> > maps;
-    Mat imagem(HEIGHT, WIDTH, CV_8UC3, Scalar::all(255));  // A matriz que vai armazenar a imagem
-    unsigned int corAtual = 0;
-    unsigned int rindex = 0;
-    Vector2f refX;
-    float refmenorx;
-    float refmaiorx;
-    float refmenory;
-    float refmaiory;
-    Vector2f X;
+    menorx = mapa[0](0, 3);
+    maiorx = mapa[0](0, 3);
+
+    menorz = mapa[0](2, 3);
+    maiorz = mapa[0](2, 3);
+
+    for(unsigned int j=0; j<mapa.size(); j++){
+        if(mapa[j](0, 3)<menorx) menorx = mapa[j](0, 3);
+        if(mapa[j](0, 3)>maiorx) maiorx = mapa[j](0, 3);
+
+        if(mapa[j](2, 3)<menorz) menorz = mapa[j](2, 3);
+        if(mapa[j](2, 3)>maiorz) maiorz = mapa[j](2, 3);
+    }
+}
+
+void desenhaBordasLabel(vector<string> &labels, Mat &imagem, vector<Scalar> &cores, Vector2f &refX,
+    float refmenorx, float refmaiorx, float refmenory, float refmaiory)
+{
     float xi, yi;
     float xf, yf;
-    vector<Scalar> cores = {    Scalar(255,   0,   0),
-                                Scalar(0,   255,   0),
-                                Scalar(0,     0, 255),
-                                Scalar(255,   0, 255),
-                                Scalar(0,   255, 255),
-                                Scalar(125, 125, 125),
-                                Scalar(125, 125, 255),
-                                Scalar(125, 225, 125),
-                                Scalar(225, 125, 125),
-                                Scalar(0,   125, 125),
-                                Scalar(125,   0, 125),
-                                Scalar(125, 125,   0)};
-
-    for (;;) {
-        int idx;
-        int c;
-
-        c = getopt_long(argc, argv, short_options, long_options, &idx);
-
-        if (-1 == c)
-            break;
-
-        switch (c) {
-        case 0: // getopt_long() flag
-            break;
-        case 'm':
-            maps.push_back(load_file(optarg));
-            break;
-        case 'l':
-            labels.push_back(optarg);
-            break;
-        case 'r':
-            rindex = strtol(optarg, NULL, 10);
-            break;
-		default:
-			usage(argc, argv);
-			exit(EXIT_FAILURE);
-		}
-	}
-
-	if(maps.size()==0){
-        usage(argc, argv);
-        exit(EXIT_FAILURE);
-	}
-
-	for(unsigned int i=0; i<maps.size(); i++){
-
-        // Quando chegar aqui já carregou todos os mapas. Agora é preciso encontrar o menor e maior valor para x e z
-        float menorx = maps[i][0](0, 3);
-        float maiorx = maps[i][0](0, 3);
-
-        float menorz = maps[i][0](2, 3);
-        float maiorz = maps[i][0](2, 3);
-
-
-        for(unsigned int j=0; j<maps[i].size(); j++){
-            if(maps[i][j](0, 3)<menorx) menorx = maps[i][j](0, 3);
-            if(maps[i][j](0, 3)>maiorx) maiorx = maps[i][j](0, 3);
-
-            if(maps[i][j](2, 3)<menorz) menorz = maps[i][j](2, 3);
-            if(maps[i][j](2, 3)>maiorz) maiorz = maps[i][j](2, 3);
-        }
-
-        Matrix2f A;
-        Vector2f B;
-
-        A << menorz, 1,
-             maiorz, 1;
-        B << imagem.rows-PIXEL_BORDA, PIXEL_BORDA;  // Esta usando valores diferentes dos máximos para ficar uma borda
-
-        X = A.colPivHouseholderQr().solve(B);
-
-        if(rindex==i){
-            // Estamos processando a referência. Vamos salvar os valores para desenhar a caixa em torno
-
-            refX = X;   // Salva a escala e o deslocamento
-            refmenorx = menorx-30;
-            refmaiorx = maiorx+20;
-
-            refmenory = menorz-10;
-            refmaiory = maiorz+10;
-        }
-
-        // Já temos as equações, vamos desenhar o mapa
-        xi = -maps[i][0](0, 3)*X(0) + X(1);
-        yi =  maps[i][0](2, 3)*X(0) + X(1);
-
-        for(unsigned int j=1; j<maps[i].size(); j++){
-            xf = -maps[i][j](0, 3)*X(0) + X(1);
-            yf =  maps[i][j](2, 3)*X(0) + X(1);
-
-            line(imagem, Point(xi, yi), Point(xf, yf), cores[corAtual], 2, LINE_AA);
-
-            xi = xf;
-            yi = yf;
-        }
-
-        corAtual++;
-
-        if(corAtual>=cores.size()){
-            corAtual = 0;
-            cerr << "Warning - number of colors small than number of maps" << endl;
-        }
-    }
-
-	// Vamos por o label na esquerda da imagem
-	corAtual=0;
+    unsigned int corAtual = 0;
+    // Vamos por o label na esquerda da imagem
 	unsigned int addy = PIXEL_BORDA;
+
 	for(unsigned int i=0; i<labels.size(); i++){
         string texto = labels[i];
         int fontFace = FONT_HERSHEY_SIMPLEX;
@@ -265,6 +171,123 @@ int main(int argc, char **argv)
         putText(imagem, texto, textOrg, fontFace, fontScale, Scalar(255, 0, 0), thickness, LINE_AA );
         line(imagem, Point(xf-10, yi), Point(xf+10, yi), Scalar(0, 0, 0) , 2, LINE_AA);
     }
+}
+
+int main(int argc, char **argv)
+{
+    vector<string> labels;
+    vector<vector<Matrix4f> > maps;
+    Mat imagem(HEIGHT, WIDTH, CV_8UC3, Scalar::all(255));  // A matriz que vai armazenar a imagem
+    unsigned int rindex = 0;
+    Vector2f refX;
+    float refmenorx;
+    float refmaiorx;
+    float refmenory;
+    float refmaiory;
+    unsigned int corAtual = 0;
+    Vector2f X;
+    float xi, yi;
+    float xf, yf;
+    string diretorio;
+    vector<Scalar> cores = {    Scalar(255,   0,   0),
+                                Scalar(0,   255,   0),
+                                Scalar(0,     0, 255),
+                                Scalar(255,   0, 255),
+                                Scalar(0,   255, 255),
+                                Scalar(125, 125, 125),
+                                Scalar(125, 125, 255),
+                                Scalar(125, 225, 125),
+                                Scalar(225, 125, 125),
+                                Scalar(0,   125, 125),
+                                Scalar(125,   0, 125),
+                                Scalar(125, 125,   0)};
+
+    for (;;) {
+        int idx;
+        int c;
+
+        c = getopt_long(argc, argv, short_options, long_options, &idx);
+
+        if (-1 == c)
+            break;
+
+        switch (c) {
+        case 0: // getopt_long() flag
+            break;
+        case 'm':
+            maps.push_back(load_file(optarg));
+            break;
+        case 'l':
+            labels.push_back(optarg);
+            break;
+        case 'r':
+            rindex = strtol(optarg, NULL, 10);
+            break;
+        case 'd':
+            diretorio = optarg;
+            break;
+		default:
+			usage(argc, argv);
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	if(maps.size()==0 || diretorio.empty()){
+        usage(argc, argv);
+        exit(EXIT_FAILURE);
+	}
+
+	for(unsigned int i=0; i<maps.size(); i++){
+
+        // Quando chegar aqui já carregou todos os mapas. Agora é preciso encontrar o menor e maior valor para x e z
+        float menorx, maiorx, menorz, maiorz;
+
+        smallxz(maps[i], menorx, maiorx, menorz, maiorz);
+
+        // Vamos encontrar uma transformação linear que mapeia os pontos do mapa nos pontos da imagem
+        Matrix2f A;
+        Vector2f B;
+
+        A << menorz, 1,
+             maiorz, 1;
+        B << imagem.rows-PIXEL_BORDA, PIXEL_BORDA;  // Esta usando valores diferentes dos máximos para ficar uma borda
+
+        X = A.colPivHouseholderQr().solve(B);
+
+        if(rindex == i){
+            // Estamos processando a referência. Vamos salvar os valores para desenhar a caixa em torno
+
+            refX = X;   // Salva a escala e o deslocamento
+            refmenorx = menorx-30;
+            refmaiorx = maiorx+20;
+
+            refmenory = menorz-10;
+            refmaiory = maiorz+10;
+        }
+
+        // Já temos as equações, vamos desenhar o mapa
+        xi = -maps[i][0](0, 3)*X(0) + X(1);
+        yi =  maps[i][0](2, 3)*X(0) + X(1);
+
+        for(unsigned int j=1; j<maps[i].size(); j++){
+            xf = -maps[i][j](0, 3)*X(0) + X(1);
+            yf =  maps[i][j](2, 3)*X(0) + X(1);
+
+            line(imagem, Point(xi, yi), Point(xf, yf), cores[corAtual], 2, LINE_AA);
+
+            xi = xf;
+            yi = yf;
+        }
+
+        corAtual++;
+
+        if(corAtual>=cores.size()){
+            corAtual = 0;
+            cerr << "Warning - number of colors small than number of maps" << endl;
+        }
+    }
+
+    desenhaBordasLabel(labels, imagem, cores, refX, refmenorx, refmaiorx, refmenory, refmaiory);
 
 	imwrite("imagem.png", imagem);
 
