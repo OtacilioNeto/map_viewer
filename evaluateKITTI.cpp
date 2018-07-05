@@ -369,7 +369,7 @@ void plotErrorPlotsComb(string dir, vector<string> &labels, unsigned int exclui,
             if(i==0 || i==2)
                 fprintf(fp,"set ylabel \"Erro de Translação[%%]\"\n");
             else
-                fprintf(fp,"set ylabel \"Erro de Rotação [deg/m]\"\n");
+                fprintf(fp,"set ylabel \"Erro de Rotação [grau/m]\"\n");
 
             // plot error curve
             fprintf(fp,"plot \\\n");
@@ -484,7 +484,7 @@ void plotErrorPlots(string dir, string label, Scalar cor)
             if(i==0 || i==2)
                 fprintf(fp,"set ylabel \"Erro de Translação[%%]\"\n");
             else
-                fprintf(fp,"set ylabel \"Erro de Rotação [deg/m]\"\n");
+                fprintf(fp,"set ylabel \"Erro de Rotação [grau/m]\"\n");
 
             // plot error curve
             fprintf(fp,"plot \"%s_%s.txt\" using ",prefix.c_str(), suffix);
