@@ -391,13 +391,13 @@ void plotErrorPlotsComb(string dir, vector<string> &labels, unsigned int exclui,
                         break;
                     }
                     if(k==labels.size()-1 || (k+1==exclui && exclui==labels.size()-1)){
-                        fprintf(fp," lc rgb \"#%02X%02X%02X\" pt 4 w linespoints\n",  (unsigned int)cores[k][0],
+                        fprintf(fp," lc rgb \"#%02X%02X%02X\" pt 4 w linespoints\n",  (unsigned int)cores[k][2],
                                                                                 (unsigned int)cores[k][1],
-                                                                                (unsigned int)cores[k][2]);
+                                                                                (unsigned int)cores[k][0]);
                     }else{
-                        fprintf(fp," lc rgb \"#%02X%02X%02X\" pt 4 w linespoints, \\\n", (unsigned int)cores[k][0],
+                        fprintf(fp," lc rgb \"#%02X%02X%02X\" pt 4 w linespoints, \\\n", (unsigned int)cores[k][2],
                                                                                 (unsigned int)cores[k][1],
-                                                                                (unsigned int)cores[k][2]);
+                                                                                (unsigned int)cores[k][0]);
                     }
                 }
             }
@@ -502,9 +502,9 @@ void plotErrorPlots(string dir, string label, Scalar cor)
                 fprintf(fp,"($1*3.6):($2*57.3) title '%s'", label.c_str());
                 break;
             }
-            fprintf(fp," lc rgb \"#%02X%02X%02X\" pt 4 w linespoints\n",    (unsigned int)cor[0],
+            fprintf(fp," lc rgb \"#%02X%02X%02X\" pt 4 w linespoints\n",    (unsigned int)cor[2],
                                                                             (unsigned int)cor[1],
-                                                                            (unsigned int)cor[2]);
+                                                                            (unsigned int)cor[0]);
 
             // close file
             fclose(fp);
@@ -549,8 +549,6 @@ void saveStats(vector<errors> err,string dir)
 
 bool eval(vector<string> &labels, vector<vector<Matrix4f> > &maps, unsigned int rindex, string diretorio, vector<Scalar> &cores)
 {
-    system(("mkdir " + diretorio).c_str());
-
     // total errors
     vector<errors> total_err;
 

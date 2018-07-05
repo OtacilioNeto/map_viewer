@@ -331,7 +331,9 @@ int main(int argc, char **argv)
 
     desenhaBordasLabel(labels, imagem, cores, refX, refmenorx, refmaiorx, refmenory, refmaiory);
 
-	imwrite("imagem.png", imagem);
+    system(("mkdir " + diretorio).c_str());
+
+	imwrite(diretorio+"/00mapa.png", imagem);
 
 	// Agora vamos fazer as analises de acordo com o dataset do KITTI
 
