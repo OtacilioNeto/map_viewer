@@ -228,11 +228,11 @@ int main(int argc, char **argv)
     float xi, yi;
     float xf, yf;
     string diretorio;
-    vector<Scalar> cores = {    Scalar(255,   0,   0),
+    vector<Scalar> cores = {    Scalar(255,   0,   0),  // Blue Green Red
                                 Scalar(0,   255,   0),
                                 Scalar(0,     0, 255),
                                 Scalar(255,   0, 255),
-                                Scalar(0,   255, 255),
+                                Scalar(246, 166,  38),
                                 Scalar(125, 125, 125),
                                 Scalar(125, 125, 255),
                                 Scalar(125, 225, 125),
