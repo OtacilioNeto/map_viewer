@@ -209,9 +209,9 @@ void translateScala(vector<vector<Matrix4f> > &maps, unsigned int rindex)
 
             Z = A.colPivHouseholderQr().solve(B);
 
-            for(unsigned int j=1; j<maps[i].size(); j++){
-                maps[i][j](0, 3) = maps[i][j](0, 3)*X(0) + X(1);
-                maps[i][j](2, 3) = maps[i][j](2, 3)*Z(0) + Z(1);
+            for(unsigned int j=0; j<maps[i].size(); j++){
+                maps[i][j](0, 3) = maps[i][j](0, 3)*X(0);
+                maps[i][j](2, 3) = maps[i][j](2, 3)*Z(0);
             }
         }
 	}
