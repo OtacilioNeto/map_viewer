@@ -180,7 +180,7 @@ void desenhaBordasLabel(vector<string> &labels, Mat &imagem, vector<Scalar> &cor
 
 void translateScala(vector<vector<Matrix4f> > &maps, unsigned int rindex)
 {
-    Vector2f X;
+    Vector2f X, Z;
     float refmenorx;
     float refmaiorx;
     float refmenorz;
@@ -197,16 +197,21 @@ void translateScala(vector<vector<Matrix4f> > &maps, unsigned int rindex)
             Matrix2f A;
             Vector2f B;
 
+            A << menorx, 1,
+                 maiorx, 1;
+            B << refmenorx, refmaiorx;  // Esta usando valores diferentes dos máximos para ficar uma borda
+
+            X = A.colPivHouseholderQr().solve(B);
+
             A << menorz, 1,
                  maiorz, 1;
             B << refmenorz, refmaiorz;  // Esta usando valores diferentes dos máximos para ficar uma borda
 
-            X = A.colPivHouseholderQr().solve(B);
+            Z = A.colPivHouseholderQr().solve(B);
 
             for(unsigned int j=1; j<maps[i].size(); j++){
                 maps[i][j](0, 3) = maps[i][j](0, 3)*X(0) + X(1);
-                maps[i][j](1, 3) = maps[i][j](1, 3)*X(0) + X(1);
-                maps[i][j](2, 3) = maps[i][j](2, 3)*X(0) + X(1);
+                maps[i][j](2, 3) = maps[i][j](2, 3)*Z(0) + Z(1);
             }
         }
 	}
